@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quest - 7th Grade Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 215, 0, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .reset-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .reset-btn:hover {
+            background: rgba(255, 107, 107, 0.4);
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .stat-item .icon {
+            font-size: 1.3em;
+        }
+        
+        .coins { color: #ffd700; }
+        .level { color: #4ecdc4; }
+        .streak { color: #ff6b6b; }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            color: #1a1a2e;
+            border-color: #ffd700;
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .level-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .level-card:hover:not(.locked) {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.2);
+        }
+        
+        .level-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .level-card.completed {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .level-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .level-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .level-topic {
+            color: #aaa;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .level-reward {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.9em;
+            color: #ffd700;
+        }
+        
+        .lock-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            opacity: 0.8;
+        }
+        
+        .game-area {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            position: relative;
+        }
+        
+        .back-btn {
+            background: rgba(78, 205, 196, 0.15);
+            color: #4ecdc4;
+            border: 2px solid rgba(78, 205, 196, 0.4);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(78, 205, 196, 0.3);
+            border-color: #4ecdc4;
+            transform: translateX(-3px);
+        }
+        
+        .game-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .question-counter {
+            color: #aaa;
+            font-size: 0.95em;
+        }
+        
+        .running-score {
+            color: #4ecdc4;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .question-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .question-text {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .timer {
+            font-size: 1.2em;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+        }
+        
+        .timer.warning {
+            animation: pulse 0.5s infinite;
+        }
+        
+        .timer.paused {
+            opacity: 0.5;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .input-area {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .math-input {
+            padding: 15px 25px;
+            font-size: 1.3em;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .math-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .math-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .input-hint {
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            margin-top: -10px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            color: #1a1a2e;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-hint {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+            border: 2px solid #4ecdc4;
+        }
+        
+        .btn-skip {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+        }
+        
+        .hint-box {
+            background: rgba(78, 205, 196, 0.1);
+            border: 2px solid #4ecdc4;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .hint-box.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback {
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background: rgba(78, 205, 196, 0.2);
+            border: 2px solid #4ecdc4;
+            color: #4ecdc4;
+        }
+        
+        .feedback.wrong {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        .feedback.info {
+            background: rgba(255, 215, 0, 0.15);
+            border: 2px solid #ffd700;
+            color: #ffd700;
+        }
+        
+        .feedback .continue-hint {
+            display: block;
+            font-size: 0.85em;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+        
+        .coin-animation {
+            position: fixed;
+            font-size: 2em;
+            color: #ffd700;
+            pointer-events: none;
+            z-index: 1000;
+            animation: coinFloat 1.5s ease-out forwards;
+        }
+        
+        @keyframes coinFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 215, 0, 0.95);
+            color: #1a1a2e;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        @keyframes toastOut {
+            from { opacity: 1; transform: translate(-50%, 0); }
+            to { opacity: 0; transform: translate(-50%, 20px); }
+        }
+        
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .shop-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .shop-item:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+        }
+        
+        .shop-item .item-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .shop-item .item-cost {
+            color: #ffd700;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item.owned {
+            opacity: 0.6;
+            border-color: #4ecdc4;
+        }
+        
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-card.unlocked {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .achievement-icon {
+            font-size: 2.5em;
+        }
+        
+        .achievement-info h3 {
+            margin-bottom: 5px;
+        }
+        
+        .achievement-info p {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+        
+        .achievement-reward {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .results-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .results-screen h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .results-screen .score-display {
+            font-size: 3em;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+        
+        .results-screen .stars {
+            font-size: 2em;
+            margin: 20px 0;
+        }
+        
+        .results-screen .coins-earned {
+            font-size: 1.5em;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+        
+        .topic-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .badge-two-step { background: rgba(255, 107, 107, 0.3); color: #ff6b6b; }
+        .badge-like-terms { background: rgba(78, 205, 196, 0.3); color: #4ecdc4; }
+        .badge-distributive { background: rgba(255, 215, 0, 0.3); color: #ffd700; }
+        .badge-mixed { background: rgba(155, 89, 182, 0.3); color: #9b59b6; }
+        
+        .intro-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .intro-screen h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b, #4ecdc4, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .intro-screen p {
+            font-size: 1.3em;
+            color: #aaa;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .intro-screen .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 150px;
+        }
+        
+        .feature .icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .btn-start {
+            font-size: 1.5em;
+            padding: 20px 50px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+        }
+        
+        .streak-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 107, 0.9);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            z-index: 100;
+            display: none;
+        }
+        
+        .streak-display.show {
+            display: block;
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #ff6b6b;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .question-text { font-size: 1.3em; }
+            .levels-grid { grid-template-columns: 1fr; }
+            .shop-grid { grid-template-columns: repeat(2, 1fr); }
+            .reset-btn { position: static; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="streak-display" id="streakDisplay">
+        🔥 Streak: <span id="streakCount">0</span>
+    </div>
+    
+    <!-- Reset confirmation modal -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal">
+            <h3>⚠️ Reset All Progress?</h3>
+            <p>This will erase all your coins, completed levels, achievements, and inventory. This cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-skip" onclick="confirmReset()">Yes, Reset</button>
+                <button class="btn btn-primary" onclick="closeResetModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quit-mid-level confirmation modal -->
+    <div class="modal-overlay" id="quitModal">
+        <div class="modal" style="border-color: #4ecdc4;">
+            <h3 style="color: #4ecdc4;">Leave this level?</h3>
+            <p>Your progress on this level will be lost. Coins you've already earned are safe.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-skip" onclick="confirmQuit()">Yes, Go Back</button>
+                <button class="btn btn-primary" onclick="closeQuitModal()">Keep Playing</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Intro Screen -->
+        <div id="introScreen" class="intro-screen">
+            <h1>🎯 Math Quest</h1>
+            <p>Embark on an epic mathematical adventure! Master two-step equations, combine like terms, and conquer the distributive property to earn gold coins and unlock amazing prizes!</p>
+            <div class="features">
+                <div class="feature">
+                    <div class="icon">📐</div>
+                    <div>8 Challenging Levels</div>
+                </div>
+                <div class="feature">
+                    <div class="icon">🏆</div>
+                    <div>8 Achievements</div>
+                </div>
+                <div class="feature">
+                    <div class="icon">🛒</div>
+                    <div>Reward Shop</div>
+                </div>
+                <div class="feature">
+                    <div class="icon">⚡</div>
+                    <div>Timed Challenges</div>
+                </div>
+            </div>
+            <button class="btn-start" onclick="startGame()">Start Adventure!</button>
+        </div>
+        
+        <!-- Main Game Screen -->
+        <div id="mainScreen" style="display: none;">
+            <div class="header">
+                <h1>🎯 Math Quest</h1>
+                <button class="reset-btn" onclick="openResetModal()" title="Reset all progress">↻ Reset</button>
+                <div class="stats-bar">
+                    <div class="stat-item coins">
+                        <span class="icon">💰</span>
+                        <span id="coinDisplay">0</span>
+                    </div>
+                    <div class="stat-item level">
+                        <span class="icon">⭐</span>
+                        Level <span id="currentLevelDisplay">1</span>
+                    </div>
+                    <div class="stat-item streak">
+                        <span class="icon">🔥</span>
+                        <span id="streakDisplayMain">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-tabs" id="navTabs">
+                <button class="nav-btn active" data-section="levels" onclick="showSection('levels')">📋 Levels</button>
+                <button class="nav-btn" data-section="achievements" onclick="showSection('achievements')">🏆 Achievements</button>
+                <button class="nav-btn" data-section="shop" onclick="showSection('shop')">🛒 Shop</button>
+                <button class="nav-btn" data-section="stats" onclick="showSection('stats')">📊 Stats</button>
+            </div>
+            
+            <!-- Levels Section -->
+            <div id="levelsSection" class="section active">
+                <div class="levels-grid" id="levelsGrid"></div>
+            </div>
+            
+            <!-- Game Play Section -->
+            <div id="gameSection" class="section">
+                <div class="game-area">
+                    <button class="back-btn" onclick="backToMenu()" title="Return to main menu">← Back to Menu</button>
+                    <div class="game-top-bar">
+                        <div class="question-counter">Question <span id="questionNumber">1</span> of <span id="questionTotal">5</span></div>
+                        <div class="running-score">✅ <span id="runningScore">0</span> correct</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="timer" id="timer">⏱️ Time: <span id="timeLeft">60</span>s</div>
+                    <div class="question-container">
+                        <div class="question-text" id="questionText"></div>
+                    </div>
+                    <div class="input-area">
+                        <input type="text" class="math-input" id="answerInput" placeholder="Your answer..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                        <button class="btn btn-primary" id="submitBtn" onclick="checkAnswer()">Submit</button>
+                    </div>
+                    <div class="input-hint" id="inputHint"></div>
+                    <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-hint" id="hintBtn" onclick="showHint()">💡 Hint (-5 coins)</button>
+                        <button class="btn btn-skip" id="skipBtn" onclick="skipQuestion()">⏭️ Skip</button>
+                    </div>
+                    <div class="hint-box" id="hintBox"></div>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            <div id="resultsSection" class="section">
+                <div class="game-area results-screen">
+                    <h2 id="resultsTitle">Level Complete!</h2>
+                    <div class="stars" id="resultsStars"></div>
+                    <div class="score-display" id="resultsScore">0%</div>
+                    <div class="coins-earned" id="resultsCoins">+0 coins</div>
+                    <div id="resultsMessage"></div>
+                    <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="backToMenu()">← Back to Menu</button>
+                        <button class="btn btn-primary" onclick="retryLevel()">🔁 Retry Level</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Achievements Section -->
+            <div id="achievementsSection" class="section">
+                <div class="achievements-grid" id="achievementsGrid"></div>
+            </div>
+            
+            <!-- Shop Section -->
+            <div id="shopSection" class="section">
+                <div class="shop-grid" id="shopGrid"></div>
+            </div>
+            
+            <!-- Stats Section -->
+            <div id="statsSection" class="section">
+                <div class="game-area">
+                    <h2 style="text-align: center; margin-bottom: 30px;">📊 Your Statistics</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                        <div class="stat-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
+                            <div style="font-size: 1.5em; font-weight: bold;" id="statTotalQuestions">0</div>
+                            <div style="color: #aaa;">Questions Answered</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">✅</div>
+                            <div style="font-size: 1.5em; font-weight: bold;" id="statCorrect">0</div>
+                            <div style="color: #aaa;">Correct Answers</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">📈</div>
+                            <div style="font-size: 1.5em; font-weight: bold;" id="statAccuracy">0%</div>
+                            <div style="color: #aaa;">Accuracy</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">🏆</div>
+                            <div style="font-size: 1.5em; font-weight: bold;" id="statLevelsCompleted">0/8</div>
+                            <div style="color: #aaa;">Levels Completed</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">🔥</div>
+                            <div style="font-size: 1.5em; font-weight: bold;" id="statBestStreak">0</div>
+                            <div style="color: #aaa;">Best Streak</div>
+                        </div>
+                        <div class="stat-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">⏱️</div>
+                            <div style="font-size: 1.5em; font-weight: bold;" id="statTotalTime">0s</div>
+                            <div style="color: #aaa;">Total Time Played</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Game Data =====
+        const gameData = {
+            levels: [
+                {
+                    id: 1, name: "Two-Step Starter", topic: "two_step_equations", difficulty: 1,
+                    description: "Solve basic two-step equations!", coinsPerQuestion: 10, bonusCoins: 50,
+                    requiredScore: 80, timeLimit: 60,
+                    problems: [
+                        { equation: "2x + 3 = 11", answer: "4", hint: "Subtract 3 from both sides, then divide by 2" },
+                        { equation: "3x + 5 = 20", answer: "5", hint: "Subtract 5 from both sides, then divide by 3" },
+                        { equation: "4x + 2 = 18", answer: "4", hint: "Subtract 2 from both sides, then divide by 4" },
+                        { equation: "5x + 1 = 26", answer: "5", hint: "Subtract 1 from both sides, then divide by 5" },
+                        { equation: "2x + 7 = 19", answer: "6", hint: "Subtract 7 from both sides, then divide by 2" }
+                    ]
+                },
+                {
+                    id: 2, name: "Like Terms Learner", topic: "combining_like_terms", difficulty: 1,
+                    description: "Combine simple like terms!", coinsPerQuestion: 10, bonusCoins: 50,
+                    requiredScore: 80, timeLimit: 60,
+                    problems: [
+                        { expression: "3x + 2x + 5", answer: "5x+5", hint: "3x + 2x = 5x" },
+                        { expression: "4x + 3x + 7", answer: "7x+7", hint: "4x + 3x = 7x" },
+                        { expression: "2x + 5x + 3", answer: "7x+3", hint: "2x + 5x = 7x" },
+                        { expression: "6x + 2x + 8", answer: "8x+8", hint: "6x + 2x = 8x" },
+                        { expression: "3x + 4x + 6", answer: "7x+6", hint: "3x + 4x = 7x" }
+                    ]
+                },
+                {
+                    id: 3, name: "Distribute & Conquer", topic: "distributive_property", difficulty: 1,
+                    description: "Master the distributive property!", coinsPerQuestion: 10, bonusCoins: 50,
+                    requiredScore: 80, timeLimit: 60,
+                    problems: [
+                        { expression: "2(3x + 4)", answer: "6x+8", hint: "2 × 3x = 6x, 2 × 4 = 8" },
+                        { expression: "3(2x + 5)", answer: "6x+15", hint: "3 × 2x = 6x, 3 × 5 = 15" },
+                        { expression: "4(2x + 3)", answer: "8x+12", hint: "4 × 2x = 8x, 4 × 3 = 12" },
+                        { expression: "2(5x + 2)", answer: "10x+4", hint: "2 × 5x = 10x, 2 × 2 = 4" },
+                        { expression: "3(4x + 2)", answer: "12x+6", hint: "3 × 4x = 12x, 3 × 2 = 6" }
+                    ]
+                },
+                {
+                    id: 4, name: "Equation Expert", topic: "two_step_equations", difficulty: 2,
+                    description: "Advanced two-step equations!", coinsPerQuestion: 15, bonusCoins: 75,
+                    requiredScore: 80, timeLimit: 90,
+                    problems: [
+                        { equation: "3x - 5 = 16", answer: "7", hint: "Add 5 to both sides, then divide by 3" },
+                        { equation: "x/2 + 3 = 8", answer: "10", hint: "Subtract 3 from both sides, then multiply by 2" },
+                        { equation: "4x - 7 = 25", answer: "8", hint: "Add 7 to both sides, then divide by 4" },
+                        { equation: "x/3 + 4 = 9", answer: "15", hint: "Subtract 4 from both sides, then multiply by 3" },
+                        { equation: "5x - 3 = 27", answer: "6", hint: "Add 3 to both sides, then divide by 5" }
+                    ]
+                },
+                {
+                    id: 5, name: "Term Titan", topic: "combining_like_terms", difficulty: 2,
+                    description: "Multiple variables challenge!", coinsPerQuestion: 15, bonusCoins: 75,
+                    requiredScore: 80, timeLimit: 90,
+                    problems: [
+                        { expression: "3x + 2y + 2x + 3y + 4", answer: "5x+5y+4", hint: "Group x, y, and constant terms" },
+                        { expression: "4x + 5y + x + 2y + 3", answer: "5x+7y+3", hint: "4x + x = 5x, 5y + 2y = 7y" },
+                        { expression: "2x + 3y + 4x + y + 5", answer: "6x+4y+5", hint: "2x + 4x = 6x, 3y + y = 4y" },
+                        { expression: "5x + 2y + 3x + 4y + 1", answer: "8x+6y+1", hint: "5x + 3x = 8x, 2y + 4y = 6y" },
+                        { expression: "x + 4y + 3x + 2y + 6", answer: "4x+6y+6", hint: "x + 3x = 4x, 4y + 2y = 6y" }
+                    ]
+                },
+                {
+                    id: 6, name: "Distribution Master", topic: "distributive_property", difficulty: 2,
+                    description: "Negative coefficients ahead!", coinsPerQuestion: 15, bonusCoins: 75,
+                    requiredScore: 80, timeLimit: 90,
+                    problems: [
+                        { expression: "-2(3x + 4)", answer: "-6x-8", hint: "-2 × 3x = -6x, -2 × 4 = -8" },
+                        { expression: "3(2x - 5)", answer: "6x-15", hint: "3 × 2x = 6x, 3 × (-5) = -15" },
+                        { expression: "-3(2x + 3)", answer: "-6x-9", hint: "-3 × 2x = -6x, -3 × 3 = -9" },
+                        { expression: "4(x - 3)", answer: "4x-12", hint: "4 × x = 4x, 4 × (-3) = -12" },
+                        { expression: "-2(4x + 1)", answer: "-8x-2", hint: "-2 × 4x = -8x, -2 × 1 = -2" }
+                    ]
+                },
+                {
+                    id: 7, name: "Math Champion", topic: "mixed", difficulty: 3,
+                    description: "All topics combined - the ultimate test!", coinsPerQuestion: 20, bonusCoins: 100,
+                    requiredScore: 85, timeLimit: 120,
+                    problems: [
+                        { type: "two_step", equation: "-3x + 5 = -10", answer: "5", hint: "Subtract 5, then divide by -3" },
+                        { type: "like_terms", expression: "-2x + 3y + 4x - y + 5", answer: "2x+2y+5", hint: "-2x + 4x = 2x, 3y - y = 2y" },
+                        { type: "distributive", expression: "-2(3x - 4) + 5x", answer: "-x+8", hint: "Distribute first, then combine like terms" },
+                        { type: "two_step", equation: "x/-2 + 3 = 7", answer: "-8", hint: "Subtract 3, then multiply by -2" },
+                        { type: "like_terms", expression: "5x - 3y - 2x + 4y - 3", answer: "3x+y-3", hint: "5x - 2x = 3x, -3y + 4y = y" }
+                    ]
+                },
+                {
+                    id: 8, name: "Grand Master", topic: "mixed", difficulty: 3,
+                    description: "The final challenge for math mastery!", coinsPerQuestion: 25, bonusCoins: 150,
+                    requiredScore: 90, timeLimit: 150,
+                    problems: [
+                        { type: "two_step", equation: "-4x - 3 = 17", answer: "-5", hint: "Add 3, then divide by -4" },
+                        { type: "like_terms", expression: "-3x + 2y - x - 3y + 4", answer: "-4x-y+4", hint: "-3x - x = -4x, 2y - 3y = -y" },
+                        { type: "distributive", expression: "-3(2x + 1) - 4x + 2", answer: "-10x-1", hint: "Distribute, then combine all like terms" },
+                        { type: "two_step", equation: "2x/3 + 4 = 10", answer: "9", hint: "Subtract 4 to get 2x/3 = 6, then multiply both sides by 3/2" },
+                        { type: "distributive", expression: "2(3x - 1) + 4x - 3y + 2y", answer: "10x-y-2", hint: "Distribute, then group and combine all terms" }
+                    ]
+                }
+            ],
+            achievements: [
+                { id: "first_win", name: "First Victory", description: "Complete your first level", icon: "🏆", reward: 50 },
+                { id: "perfect_score", name: "Perfect Score", description: "Get 100% on any level", icon: "⭐", reward: 100 },
+                { id: "speed_demon", name: "Speed Demon", description: "Complete a level in under 30 seconds", icon: "⚡", reward: 75 },
+                { id: "coin_collector", name: "Coin Collector", description: "Earn 500 total coins", icon: "💰", reward: 200 },
+                { id: "topic_master", name: "Topic Master", description: "Complete all levels in one topic", icon: "🎓", reward: 300 },
+                { id: "grand_master", name: "Grand Master", description: "Complete all 8 levels", icon: "👑", reward: 500 },
+                { id: "streak_master", name: "Streak Master", description: "Answer 10 questions correctly in a row", icon: "🔥", reward: 150 },
+                { id: "hint_hero", name: "Hint Hero", description: "Complete a level without using hints", icon: "🧠", reward: 100 }
+            ],
+            shopItems: [
+                { id: "avatar_1", name: "Math Wizard", type: "avatar", cost: 100, icon: "🧙" },
+                { id: "avatar_2", name: "Number Ninja", type: "avatar", cost: 150, icon: "🥷" },
+                { id: "avatar_3", name: "Equation Eagle", type: "avatar", cost: 200, icon: "🦅" },
+                { id: "theme_1", name: "Space Theme", type: "theme", cost: 250, icon: "🚀" },
+                { id: "theme_2", name: "Ocean Theme", type: "theme", cost: 250, icon: "🌊" },
+                { id: "badge_1", name: "Gold Star Badge", type: "badge", cost: 300, icon: "🌟" },
+                { id: "badge_2", name: "Diamond Badge", type: "badge", cost: 500, icon: "💎" },
+                { id: "powerup_1", name: "Extra Time", type: "powerup", cost: 50, icon: "⏰" },
+                { id: "powerup_2", name: "Double Coins", type: "powerup", cost: 100, icon: "💵" },
+                { id: "powerup_3", name: "Skip Question", type: "powerup", cost: 75, icon: "⏭️" }
+            ]
+        };
+
+        // ===== Game State =====
+        let gameState = {
+            coins: 0,
+            currentLevel: null,
+            currentQuestion: 0,
+            score: 0,
+            streak: 0,
+            bestStreak: 0,
+            totalQuestions: 0,
+            correctAnswers: 0,
+            totalTime: 0,
+            levelsCompleted: [],
+            achievements: [],
+            inventory: [],
+            usedHints: false,
+            timerInterval: null,
+            timeLeft: 0,
+            startTime: null,
+            timerPaused: false,
+            awaitingNext: false, // when feedback is showing, Enter advances instead of submitting
+            currentStep: 0,      // for two-step problems: 0 = step 1, 1 = step 2
+            parsedTwoStep: null, // cached parse of the current two-step equation
+            stepOneCorrect: false // tracks whether step 1 was answered correctly (for partial credit)
+        };
+
+        // ===== Initialize particles =====
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // ===== Start Game =====
+        function startGame() {
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+            loadProgress();
+            renderLevels();
+            renderAchievements();
+            renderShop();
+            updateStats();
+        }
+
+        // ===== Section navigation (FIXED: properly deactivates all sections) =====
+        function showSection(section) {
+            // Hide ALL sections, including hidden ones like gameSection and resultsSection
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            // Clear all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            const sectionEl = document.getElementById(section + 'Section');
+            if (sectionEl) sectionEl.classList.add('active');
+            
+            // Only highlight a nav button if this section corresponds to a tab
+            const navBtn = document.querySelector(`.nav-btn[data-section="${section}"]`);
+            if (navBtn) navBtn.classList.add('active');
+            
+            // Refresh content as needed
+            if (section === 'levels') renderLevels();
+            else if (section === 'achievements') renderAchievements();
+            else if (section === 'shop') renderShop();
+            else if (section === 'stats') updateStats();
+        }
+
+        // ===== Render Levels =====
+        function renderLevels() {
+            const grid = document.getElementById('levelsGrid');
+            grid.innerHTML = '';
+            
+            gameData.levels.forEach(level => {
+                const isLocked = level.id > 1 && !gameState.levelsCompleted.includes(level.id - 1);
+                const isCompleted = gameState.levelsCompleted.includes(level.id);
+                
+                const card = document.createElement('div');
+                card.className = `level-card ${isLocked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}`;
+                const badgeClass = level.topic === 'two_step_equations' ? 'two-step' : 
+                                   level.topic === 'combining_like_terms' ? 'like-terms' : 
+                                   level.topic === 'distributive_property' ? 'distributive' : 'mixed';
+                card.innerHTML = `
+                    <div class="level-number">${level.id}</div>
+                    <div class="level-name">${level.name}</div>
+                    <div class="topic-badge badge-${badgeClass}">${level.topic.replace(/_/g, ' ')}</div>
+                    <div class="level-topic">${level.description}</div>
+                    <div class="level-reward">💰 ${level.coinsPerQuestion} coins/question</div>
+                    ${isLocked ? '<div class="lock-icon">🔒</div>' : ''}
+                    ${isCompleted ? '<div style="color: #4ecdc4; font-size: 1.1em; margin-top: 10px;">✅ Completed!</div>' : ''}
+                `;
+                
+                if (!isLocked) {
+                    card.onclick = () => startLevel(level.id);
+                }
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // ===== Start Level =====
+        function startLevel(levelId) {
+            const level = gameData.levels.find(l => l.id === levelId);
+            gameState.currentLevel = level;
+            gameState.currentQuestion = 0;
+            gameState.score = 0;
+            gameState.usedHints = false;
+            gameState.streak = 0;
+            gameState.timeLeft = level.timeLimit;
+            gameState.startTime = Date.now();
+            gameState.timerPaused = false;
+            gameState.awaitingNext = false;
+            
+            // Hide all sections, show only game
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('gameSection').classList.add('active');
+            
+            document.getElementById('currentLevelDisplay').textContent = level.id;
+            document.getElementById('questionTotal').textContent = level.problems.length;
+            document.getElementById('runningScore').textContent = '0';
+            document.getElementById('timer').classList.remove('warning', 'paused');
+            
+            updateProgress();
+            showQuestion();
+            startTimer();
+            pushGameHistoryState();
+        }
+
+        // ===== Show Question =====
+        function showQuestion() {
+            const level = gameState.currentLevel;
+            const problem = level.problems[gameState.currentQuestion];
+            
+            // Determine the problem's effective type
+            const effectiveType = problem.type || level.topic;
+            const isTwoStep = (effectiveType === 'two_step_equations' || effectiveType === 'two_step');
+            
+            // Reset step state for this problem
+            gameState.currentStep = 0;
+            gameState.stepOneCorrect = false;
+            gameState.parsedTwoStep = isTwoStep ? parseTwoStep(problem.equation) : null;
+            
+            let questionText = '';
+            let inputHint = '';
+            if (isTwoStep && gameState.parsedTwoStep) {
+                // Render Step 1 of the two-step flow
+                renderTwoStepUI();
+                inputHint = 'Enter just a number';
+            } else if (effectiveType === 'combining_like_terms' || effectiveType === 'like_terms') {
+                questionText = `Simplify:<br><strong style="font-size: 1.3em;">${problem.expression}</strong>`;
+                inputHint = 'Combine like terms (e.g., 5x+5 or 3x+2y-1)';
+                document.getElementById('questionText').innerHTML = questionText;
+            } else {
+                questionText = `Expand and simplify:<br><strong style="font-size: 1.3em;">${problem.expression}</strong>`;
+                inputHint = 'Distribute, then simplify (e.g., 6x+8 or -x+8)';
+                document.getElementById('questionText').innerHTML = questionText;
+            }
+            
+            document.getElementById('questionNumber').textContent = gameState.currentQuestion + 1;
+            document.getElementById('inputHint').textContent = inputHint;
+            
+            const input = document.getElementById('answerInput');
+            input.value = '';
+            input.disabled = false;
+            input.focus();
+            
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('skipBtn').disabled = false;
+            document.getElementById('hintBox').classList.remove('show');
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('feedback').className = 'feedback';
+            
+            gameState.awaitingNext = false;
+            gameState.timerPaused = false;
+            document.getElementById('timer').classList.remove('paused');
+        }
+        
+        // ===== Render Two-Step Problem UI =====
+        // Step 0 = show original equation + step 1 instruction
+        // Step 1 = show step 1 completed + step 2 instruction
+        function renderTwoStepUI() {
+            const parsed = gameState.parsedTwoStep;
+            const problem = gameState.currentLevel.problems[gameState.currentQuestion];
+            
+            let html = `
+                <div style="font-size: 0.9em; color: #aaa; margin-bottom: 8px;">Solve for x:</div>
+                <div style="font-size: 1.5em; font-family: 'Courier New', monospace; margin-bottom: 20px;">${problem.equation}</div>
+            `;
+            
+            if (gameState.currentStep === 0) {
+                // Step 1 prompt
+                html += `
+                    <div style="background: rgba(78,205,196,0.1); border: 2px solid rgba(78,205,196,0.4); border-radius: 12px; padding: 15px; margin-bottom: 12px; text-align: left;">
+                        <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 6px;">📘 Step 1 of 2</div>
+                        <div style="font-size: 0.95em; line-height: 1.5;">${parsed.step1.instruction}</div>
+                        <div style="margin-top: 10px; font-family: 'Courier New', monospace; color: #ffd700; font-size: 1.05em;">${parsed.step1.display}</div>
+                    </div>
+                    <div style="font-size: 1.1em; margin-bottom: 8px;">${parsed.step1.prompt}</div>
+                `;
+            } else {
+                // Step 1 done, show summary + Step 2 prompt
+                html += `
+                    <div style="background: rgba(78,205,196,0.15); border: 2px solid #4ecdc4; border-radius: 12px; padding: 12px; margin-bottom: 12px; text-align: left;">
+                        <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 4px;">✓ Step 1 complete</div>
+                        <div style="font-family: 'Courier New', monospace; font-size: 1.05em;">${parsed.xTerm} = ${fmtNum(parsed.step1.result)}</div>
+                    </div>
+                    <div style="background: rgba(255,215,0,0.1); border: 2px solid rgba(255,215,0,0.4); border-radius: 12px; padding: 15px; margin-bottom: 12px; text-align: left;">
+                        <div style="color: #ffd700; font-weight: bold; margin-bottom: 6px;">📗 Step 2 of 2</div>
+                        <div style="font-size: 0.95em; line-height: 1.5;">${parsed.step2.instruction}</div>
+                        <div style="margin-top: 10px; font-family: 'Courier New', monospace; color: #ffd700; font-size: 1.05em;">${parsed.step2.display}</div>
+                    </div>
+                    <div style="font-size: 1.1em; margin-bottom: 8px;">${parsed.step2.prompt}</div>
+                `;
+            }
+            
+            document.getElementById('questionText').innerHTML = html;
+        }
+
+        // ===== Timer (FIXED: respects pause state) =====
+        function startTimer() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            
+            gameState.timerInterval = setInterval(() => {
+                if (gameState.timerPaused) return;
+                
+                gameState.timeLeft--;
+                document.getElementById('timeLeft').textContent = gameState.timeLeft;
+                
+                if (gameState.timeLeft <= 10) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    gameState.timerInterval = null;
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+        
+        function pauseTimer() {
+            gameState.timerPaused = true;
+            document.getElementById('timer').classList.add('paused');
+        }
+
+        // ===== Update Progress =====
+        function updateProgress() {
+            const progress = (gameState.currentQuestion / gameState.currentLevel.problems.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // ===== Show Hint =====
+        function showHint() {
+            if (gameState.awaitingNext) return;
+            
+            if (gameState.coins < 5) {
+                showToast("Not enough coins for a hint! Need 5 💰", '#ff6b6b');
+                return;
+            }
+            
+            gameState.coins -= 5;
+            gameState.usedHints = true;
+            updateCoinDisplay();
+            
+            const problem = gameState.currentLevel.problems[gameState.currentQuestion];
+            const parsed = gameState.parsedTwoStep;
+            
+            let hintText;
+            if (parsed) {
+                // For two-step problems, hint depends on which step
+                if (gameState.currentStep === 0) {
+                    hintText = `Calculate: <strong>${parsed.step1.display}</strong>`;
+                } else {
+                    hintText = `Calculate: <strong>${parsed.step2.display}</strong>`;
+                }
+            } else {
+                hintText = problem.hint;
+            }
+            
+            document.getElementById('hintBox').innerHTML = `<strong>💡 Hint:</strong> ${hintText}`;
+            document.getElementById('hintBox').classList.add('show');
+            saveProgress();
+        }
+
+        // ===== Skip Question (FIXED: explicit feedback, no double-advance) =====
+        function skipQuestion() {
+            if (gameState.awaitingNext) return;
+            
+            gameState.totalQuestions++;
+            gameState.streak = 0;
+            updateStreak();
+            
+            const problem = gameState.currentLevel.problems[gameState.currentQuestion];
+            const parsed = gameState.parsedTwoStep;
+            const correctAnswer = parsed ? String(parsed.finalAnswer) : problem.answer;
+            
+            showFeedback(`⏭️ Skipped. Answer was: ${formatAnswer(correctAnswer)}`, 'info');
+            advanceAfterAnswer();
+        }
+        
+        // ===== Back to Main Menu =====
+        // Smart: confirms if mid-level (would lose progress), instant if on results
+        function backToMenu() {
+            const onGame = document.getElementById('gameSection').classList.contains('active');
+            const onResults = document.getElementById('resultsSection').classList.contains('active');
+            
+            if (onGame) {
+                // Mid-level: confirm before discarding progress
+                pauseTimer();
+                document.getElementById('quitModal').classList.add('show');
+            } else if (onResults) {
+                // Results screen: no confirmation needed, level is already over
+                showSection('levels');
+            } else {
+                showSection('levels');
+            }
+        }
+        
+        function confirmQuit() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            closeQuitModal();
+            showSection('levels');
+        }
+        
+        function closeQuitModal() {
+            document.getElementById('quitModal').classList.remove('show');
+            // Resume timer if we paused it just to show the modal
+            const onGame = document.getElementById('gameSection').classList.contains('active');
+            if (onGame && !gameState.awaitingNext) {
+                gameState.timerPaused = false;
+                document.getElementById('timer').classList.remove('paused');
+            }
+        }
+
+        // ===== Normalize answer for flexible comparison =====
+        // Accepts: spaces, case, *, equivalent term orderings for like-terms/distributive
+        function normalizeAnswer(str) {
+            if (str === null || str === undefined) return '';
+            // Lowercase, remove all whitespace, remove asterisks (treat 5*x as 5x)
+            let s = String(str).toLowerCase().replace(/\s+/g, '').replace(/\*/g, '');
+            return s;
+        }
+        
+        // Parse expression like "5x+5" or "3x+2y-1" or "-6x-8" into a canonical sorted form
+        // Returns null if it doesn't look like a polynomial-style expression
+        function canonicalizePolynomial(str) {
+            const s = normalizeAnswer(str);
+            if (s === '') return null;
+            
+            // If it's just a plain number (no variables), return as-is
+            if (/^-?\d+(\.\d+)?$/.test(s)) return s;
+            
+            // Tokenize: match terms like +3x, -2y, +5, -7, 3x, x, -x
+            // Allow leading sign optional
+            const termRegex = /([+-]?)(\d*\.?\d*)([a-z]?)/g;
+            const terms = {};
+            let match;
+            let consumed = 0;
+            let firstTerm = true;
+            
+            // Reset regex
+            termRegex.lastIndex = 0;
+            while ((match = termRegex.exec(s)) !== null) {
+                if (match[0] === '') {
+                    if (termRegex.lastIndex === s.length) break;
+                    termRegex.lastIndex++;
+                    continue;
+                }
+                const [full, sign, num, varPart] = match;
+                if (full === '' || (!num && !varPart)) continue;
+                
+                consumed += full.length;
+                
+                let coef;
+                if (num === '' || num === undefined) {
+                    coef = varPart ? 1 : 0;
+                } else {
+                    coef = parseFloat(num);
+                }
+                
+                if (sign === '-') coef = -coef;
+                else if (sign === '' && !firstTerm) {
+                    // No sign in middle of expression means invalid — but our regex shouldn't produce this
+                }
+                
+                firstTerm = false;
+                
+                const key = varPart || '_const';
+                terms[key] = (terms[key] || 0) + coef;
+            }
+            
+            // Sanity: if we didn't consume the whole string, parsing failed
+            if (consumed !== s.length) return null;
+            
+            // Filter zero coefficients
+            const keys = Object.keys(terms).filter(k => terms[k] !== 0);
+            if (keys.length === 0) return '0';
+            
+            // Sort: variables alphabetically first, constant last
+            keys.sort((a, b) => {
+                if (a === '_const') return 1;
+                if (b === '_const') return -1;
+                return a.localeCompare(b);
+            });
+            
+            // Reconstruct canonical string
+            let result = '';
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[i];
+                const c = terms[k];
+                const varStr = (k === '_const') ? '' : k;
+                
+                if (i === 0) {
+                    if (varStr) {
+                        if (c === 1) result += varStr;
+                        else if (c === -1) result += '-' + varStr;
+                        else result += c + varStr;
+                    } else {
+                        result += c;
+                    }
+                } else {
+                    if (c > 0) result += '+';
+                    if (varStr) {
+                        if (c === 1) result += varStr;
+                        else if (c === -1) result += '-' + varStr;
+                        else result += c + varStr;
+                    } else {
+                        result += c;
+                    }
+                }
+            }
+            return result;
+        }
+
+        // ===== Parse a two-step equation into Step 1 and Step 2 with instructions =====
+        // Handles: ax+b=c, ax-b=c, -ax+b=c, -ax-b=c, x/a+b=c, x/-a+b=c, ax/d+b=c
+        function parseTwoStep(eq) {
+            const s = eq.replace(/\s+/g, '');
+            const eqIdx = s.indexOf('=');
+            if (eqIdx === -1) return null;
+            const lhs = s.substring(0, eqIdx);
+            const rhs = parseFloat(s.substring(eqIdx + 1));
+            
+            // Find the +/- that separates the x-term from the constant on LHS
+            // Skip position 0 (unary sign on coefficient) and /-X patterns (x/-2)
+            let opIdx = -1;
+            for (let i = 1; i < lhs.length; i++) {
+                if ((lhs[i] === '+' || lhs[i] === '-') && lhs[i-1] !== '/') {
+                    opIdx = i;
+                    break;
+                }
+            }
+            if (opIdx === -1) return null;
+            
+            const xTerm = lhs.substring(0, opIdx);
+            const constSign = lhs[opIdx];
+            const constVal = parseFloat(lhs.substring(opIdx + 1));
+            const constant = constSign === '+' ? constVal : -constVal;
+            
+            // Step 1 result: ax/d = rhs - constant
+            const step1Result = rhs - constant;
+            
+            // Parse coefficient and divisor from xTerm
+            let coef, divisor;
+            if (xTerm.includes('/')) {
+                const [num, den] = xTerm.split('/');
+                divisor = parseFloat(den);
+                if (num === 'x') coef = 1;
+                else if (num === '-x') coef = -1;
+                else coef = parseFloat(num.replace('x', ''));
+            } else {
+                divisor = 1;
+                if (xTerm === 'x') coef = 1;
+                else if (xTerm === '-x') coef = -1;
+                else coef = parseFloat(xTerm.replace('x', ''));
+            }
+            
+            const finalAnswer = (step1Result * divisor) / coef;
+            
+            // Step 1 instruction (always: undo the constant by opposite operation)
+            let step1Instruction;
+            if (constSign === '+') {
+                step1Instruction = `The opposite of <strong>adding ${constVal}</strong> is <strong>subtracting ${constVal}</strong>. Do this on both sides.`;
+            } else {
+                step1Instruction = `The opposite of <strong>subtracting ${constVal}</strong> is <strong>adding ${constVal}</strong>. Do this on both sides.`;
+            }
+            const step1Display = constSign === '+' 
+                ? `${xTerm} = ${rhs} − ${constVal}`
+                : `${xTerm} = ${rhs} + ${constVal}`;
+            
+            // Step 2 instruction (undo the coefficient/divisor)
+            let step2Instruction, step2Display;
+            const isJustDivision = xTerm.includes('/') && (xTerm.startsWith('x/') || xTerm.startsWith('-x/'));
+            
+            if (isJustDivision) {
+                // x/d = result → multiply by d
+                step2Instruction = `The opposite of <strong>dividing by ${divisor}</strong> is <strong>multiplying by ${divisor}</strong>. Do this on both sides.`;
+                step2Display = `x = ${step1Result} × ${divisor}`;
+            } else if (xTerm.includes('/')) {
+                // ax/d = result → multiply by d, then divide by a
+                step2Instruction = `Multiply both sides by <strong>${divisor}</strong>, then divide by <strong>${coef}</strong>.`;
+                step2Display = `x = (${step1Result} × ${divisor}) ÷ ${coef}`;
+            } else {
+                // ax = result → divide by a
+                step2Instruction = `The opposite of <strong>multiplying by ${coef}</strong> is <strong>dividing by ${coef}</strong>. Do this on both sides.`;
+                step2Display = `x = ${step1Result} ÷ ${coef}`;
+            }
+            
+            return {
+                original: eq,
+                xTerm,
+                step1: { 
+                    result: step1Result, 
+                    instruction: step1Instruction, 
+                    display: step1Display,
+                    prompt: `What does <code style="background:rgba(255,215,0,0.2);padding:2px 8px;border-radius:6px;font-size:1.1em;">${xTerm}</code> equal?`
+                },
+                step2: { 
+                    result: finalAnswer, 
+                    instruction: step2Instruction, 
+                    display: step2Display,
+                    prompt: `Now solve for <strong>x</strong>:`
+                },
+                finalAnswer
+            };
+        }
+        
+        // Format a number for display, handling negatives nicely
+        function fmtNum(n) {
+            if (Number.isInteger(n)) return String(n);
+            return String(parseFloat(n.toFixed(4)));
+        }
+        
+        function answersEquivalent(userInput, correctAnswer) {
+            const userNorm = normalizeAnswer(userInput);
+            const correctNorm = normalizeAnswer(correctAnswer);
+            
+            // Direct string match after normalization
+            if (userNorm === correctNorm) return true;
+            
+            // Try canonical polynomial comparison (handles term reordering)
+            const userCanon = canonicalizePolynomial(userInput);
+            const correctCanon = canonicalizePolynomial(correctAnswer);
+            
+            if (userCanon !== null && correctCanon !== null && userCanon === correctCanon) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function formatAnswer(ans) {
+            // Display nicely: 5x+5 -> 5x + 5, -6x-8 -> -6x - 8
+            return String(ans).replace(/([+-])/g, ' $1 ').replace(/^\s*([+-])\s*/, '$1').replace(/\s+/g, ' ').trim();
+        }
+
+        // ===== Check Answer (handles two-step flow + flexible matching) =====
+        function checkAnswer() {
+            if (gameState.awaitingNext) return;
+            
+            const input = document.getElementById('answerInput').value.trim();
+            if (input === '') {
+                showToast('Type your answer first!', '#ffd700');
+                return;
+            }
+            
+            const problem = gameState.currentLevel.problems[gameState.currentQuestion];
+            const parsed = gameState.parsedTwoStep;
+            const isTwoStep = parsed !== null;
+            
+            // --- Two-step problem, Step 1 ---
+            if (isTwoStep && gameState.currentStep === 0) {
+                const expected = parsed.step1.result;
+                if (answersEquivalent(input, String(expected))) {
+                    // Step 1 correct — advance to Step 2 (no coins yet, no counted question)
+                    gameState.stepOneCorrect = true;
+                    gameState.currentStep = 1;
+                    renderTwoStepUI();
+                    document.getElementById('answerInput').value = '';
+                    document.getElementById('answerInput').focus();
+                    showFeedback(`✓ Step 1 correct! Now do Step 2.`, 'correct');
+                    // Auto-hide feedback after a moment
+                    setTimeout(() => {
+                        const fb = document.getElementById('feedback');
+                        if (fb.classList.contains('correct')) fb.style.display = 'none';
+                    }, 1800);
+                } else {
+                    // Step 1 wrong — give them another try, show the right value, advance
+                    pauseTimer();
+                    document.getElementById('answerInput').disabled = true;
+                    document.getElementById('submitBtn').disabled = true;
+                    document.getElementById('hintBtn').disabled = true;
+                    document.getElementById('skipBtn').disabled = true;
+                    
+                    gameState.stepOneCorrect = false;
+                    showFeedback(`❌ Not quite for Step 1. The correct value was ${fmtNum(expected)}. Let's continue to Step 2...`, 'wrong');
+                    gameState.streak = 0;
+                    updateStreak();
+                    
+                    // After delay, advance to Step 2 with the correct step-1 value
+                    setTimeout(() => {
+                        gameState.currentStep = 1;
+                        renderTwoStepUI();
+                        document.getElementById('answerInput').disabled = false;
+                        document.getElementById('submitBtn').disabled = false;
+                        document.getElementById('hintBtn').disabled = false;
+                        document.getElementById('skipBtn').disabled = false;
+                        document.getElementById('answerInput').value = '';
+                        document.getElementById('answerInput').focus();
+                        document.getElementById('feedback').style.display = 'none';
+                        gameState.timerPaused = false;
+                        document.getElementById('timer').classList.remove('paused');
+                    }, 2500);
+                }
+                return;
+            }
+            
+            // --- Either non-two-step OR two-step Step 2 (final answer) ---
+            gameState.totalQuestions++;
+            
+            pauseTimer();
+            document.getElementById('answerInput').disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('hintBtn').disabled = true;
+            document.getElementById('skipBtn').disabled = true;
+            
+            const correctAnswer = isTwoStep ? String(parsed.finalAnswer) : problem.answer;
+            
+            if (answersEquivalent(input, correctAnswer)) {
+                gameState.score++;
+                gameState.correctAnswers++;
+                gameState.streak++;
+                
+                if (gameState.streak > gameState.bestStreak) {
+                    gameState.bestStreak = gameState.streak;
+                }
+                
+                let coinsEarned = gameState.currentLevel.coinsPerQuestion;
+                // For two-step problems, full coins require BOTH steps correct
+                if (isTwoStep && !gameState.stepOneCorrect) {
+                    coinsEarned = Math.floor(coinsEarned / 2);
+                }
+                // Double Coins powerup
+                if (gameState.inventory.includes('powerup_2')) {
+                    coinsEarned *= 2;
+                }
+                gameState.coins += coinsEarned;
+                
+                document.getElementById('runningScore').textContent = gameState.score;
+                const msg = (isTwoStep && !gameState.stepOneCorrect) 
+                    ? `✅ Step 2 correct! Partial credit: +${coinsEarned} coins`
+                    : `✅ Correct! +${coinsEarned} coins`;
+                showFeedback(msg, 'correct');
+                showCoinAnimation(coinsEarned);
+                updateStreak();
+                checkAchievements();
+            } else {
+                showFeedback(`❌ Not quite. Answer: ${formatAnswer(correctAnswer)}`, 'wrong');
+                gameState.streak = 0;
+                updateStreak();
+            }
+            
+            updateCoinDisplay();
+            advanceAfterAnswer();
+        }
+        
+        // ===== Handle timeout separately from check =====
+        function handleTimeout() {
+            if (gameState.awaitingNext) return;
+            
+            const problem = gameState.currentLevel.problems[gameState.currentQuestion];
+            const parsed = gameState.parsedTwoStep;
+            const correctAnswer = parsed ? String(parsed.finalAnswer) : problem.answer;
+            
+            gameState.totalQuestions++;
+            gameState.streak = 0;
+            updateStreak();
+            
+            document.getElementById('answerInput').disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('hintBtn').disabled = true;
+            document.getElementById('skipBtn').disabled = true;
+            
+            showFeedback(`⏰ Time's up! Answer: ${formatAnswer(correctAnswer)}`, 'wrong');
+            advanceAfterAnswer();
+        }
+        
+        // ===== After answer: show "press Enter" hint, then auto-advance =====
+        function advanceAfterAnswer() {
+            gameState.awaitingNext = true;
+            
+            // Append "press Enter" hint to feedback
+            const feedback = document.getElementById('feedback');
+            const hint = document.createElement('span');
+            hint.className = 'continue-hint';
+            hint.textContent = 'Press Enter or wait to continue...';
+            feedback.appendChild(hint);
+            
+            setTimeout(() => {
+                if (gameState.awaitingNext) nextQuestion();
+            }, 2200);
+        }
+
+        // ===== Show Feedback =====
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+            feedback.style.display = 'block';
+        }
+        
+        // ===== Toast (for transient non-blocking messages) =====
+        function showToast(message, color = '#ffd700') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            toast.style.background = color === '#ffd700' ? 'rgba(255, 215, 0, 0.95)' : 
+                                    color === '#ff6b6b' ? 'rgba(255, 107, 107, 0.95)' :
+                                    'rgba(78, 205, 196, 0.95)';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ===== Coin Animation =====
+        function showCoinAnimation(amount) {
+            const coin = document.createElement('div');
+            coin.className = 'coin-animation';
+            coin.textContent = '💰+' + amount;
+            coin.style.left = (window.innerWidth / 2 - 50) + 'px';
+            coin.style.top = (window.innerHeight / 2) + 'px';
+            document.body.appendChild(coin);
+            setTimeout(() => coin.remove(), 1500);
+        }
+
+        // ===== Update Streak =====
+        function updateStreak() {
+            document.getElementById('streakCount').textContent = gameState.streak;
+            document.getElementById('streakDisplayMain').textContent = gameState.streak;
+            
+            const streakDisplay = document.getElementById('streakDisplay');
+            if (gameState.streak >= 3) {
+                streakDisplay.classList.add('show');
+            } else {
+                streakDisplay.classList.remove('show');
+            }
+        }
+
+        // ===== Next Question =====
+        function nextQuestion() {
+            gameState.awaitingNext = false;
+            gameState.currentQuestion++;
+            
+            if (gameState.currentQuestion >= gameState.currentLevel.problems.length) {
+                endLevel();
+            } else {
+                updateProgress();
+                showQuestion();
+            }
+        }
+
+        // ===== End Level =====
+        function endLevel() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            
+            const level = gameState.currentLevel;
+            const totalQuestions = level.problems.length;
+            const percentage = Math.round((gameState.score / totalQuestions) * 100);
+            const passed = percentage >= level.requiredScore;
+            
+            // Bonus coins on pass
+            let bonusEarned = 0;
+            if (passed) {
+                bonusEarned = level.bonusCoins;
+                if (gameState.inventory.includes('powerup_2')) bonusEarned *= 2;
+                gameState.coins += bonusEarned;
+                
+                if (!gameState.levelsCompleted.includes(level.id)) {
+                    gameState.levelsCompleted.push(level.id);
+                }
+                
+                checkAchievements();
+                
+                if (percentage === 100) {
+                    unlockAchievement('perfect_score');
+                }
+                
+                const timeTaken = (Date.now() - gameState.startTime) / 1000;
+                if (timeTaken < 30) {
+                    unlockAchievement('speed_demon');
+                }
+                
+                if (!gameState.usedHints) {
+                    unlockAchievement('hint_hero');
+                }
+            }
+            
+            gameState.totalTime += (Date.now() - gameState.startTime) / 1000;
+            
+            // Hide game, show results
+            document.getElementById('gameSection').classList.remove('active');
+            document.getElementById('resultsSection').classList.add('active');
+            
+            document.getElementById('resultsTitle').textContent = passed ? '🎉 Level Complete!' : '💪 Try Again!';
+            document.getElementById('resultsScore').textContent = percentage + '%';
+            
+            const perQuestionCoins = gameState.score * level.coinsPerQuestion * (gameState.inventory.includes('powerup_2') ? 2 : 1);
+            const totalCoinsThisLevel = perQuestionCoins + bonusEarned;
+            const breakdown = passed && bonusEarned > 0 
+                ? `+${totalCoinsThisLevel} coins (${perQuestionCoins} + ${bonusEarned} bonus)` 
+                : `+${perQuestionCoins} coins`;
+            document.getElementById('resultsCoins').textContent = breakdown;
+            
+            let stars = '';
+            if (percentage >= 90) stars = '⭐⭐⭐';
+            else if (percentage >= 70) stars = '⭐⭐';
+            else if (percentage >= 50) stars = '⭐';
+            else stars = '💪';
+            document.getElementById('resultsStars').textContent = stars;
+            
+            let message = '';
+            if (percentage === 100) message = "Perfect! You're a math genius! 🧠✨";
+            else if (percentage >= 90) message = 'Excellent work! Almost perfect! 🌟';
+            else if (percentage >= 80) message = 'Great job! You passed the level! 👍';
+            else if (percentage >= 50) message = 'Good effort! Keep practicing! 📚';
+            else message = "Don't give up! Try again! 💪";
+            
+            if (!passed) {
+                message += `<br><span style="color: #ff6b6b; font-size: 0.9em;">Need ${level.requiredScore}% to pass this level.</span>`;
+            }
+            
+            document.getElementById('resultsMessage').innerHTML = `<p style="margin-top: 20px; font-size: 1.1em;">${message}</p>`;
+            
+            if (passed) {
+                createConfetti();
+            }
+            
+            updateCoinDisplay();
+            saveProgress();
+        }
+
+        // ===== Back to Levels (alias for backToMenu, kept for compatibility) =====
+        function backToLevels() {
+            backToMenu();
+        }
+
+        // ===== Retry Level =====
+        function retryLevel() {
+            startLevel(gameState.currentLevel.id);
+        }
+
+        // ===== Check Achievements =====
+        function checkAchievements() {
+            if (gameState.levelsCompleted.length >= 1 && !gameState.achievements.includes('first_win')) {
+                unlockAchievement('first_win');
+            }
+            
+            if (gameState.coins >= 500 && !gameState.achievements.includes('coin_collector')) {
+                unlockAchievement('coin_collector');
+            }
+            
+            if (gameState.streak >= 10 && !gameState.achievements.includes('streak_master')) {
+                unlockAchievement('streak_master');
+            }
+            
+            const topics = ['two_step_equations', 'combining_like_terms', 'distributive_property'];
+            for (const topic of topics) {
+                const topicLevels = gameData.levels.filter(l => l.topic === topic).map(l => l.id);
+                const completed = topicLevels.every(id => gameState.levelsCompleted.includes(id));
+                if (completed && !gameState.achievements.includes('topic_master')) {
+                    unlockAchievement('topic_master');
+                    break;
+                }
+            }
+            
+            if (gameState.levelsCompleted.length === 8 && !gameState.achievements.includes('grand_master')) {
+                unlockAchievement('grand_master');
+            }
+        }
+
+        // ===== Unlock Achievement (FIXED: uses toast, doesn't interfere with feedback) =====
+        function unlockAchievement(achievementId) {
+            if (gameState.achievements.includes(achievementId)) return;
+            
+            gameState.achievements.push(achievementId);
+            const achievement = gameData.achievements.find(a => a.id === achievementId);
+            gameState.coins += achievement.reward;
+            
+            showToast(`🏆 ${achievement.name}! +${achievement.reward} coins`, '#ffd700');
+            updateCoinDisplay();
+            saveProgress();
+        }
+
+        // ===== Render Achievements =====
+        function renderAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            grid.innerHTML = '';
+            
+            gameData.achievements.forEach(achievement => {
+                const isUnlocked = gameState.achievements.includes(achievement.id);
+                
+                const card = document.createElement('div');
+                card.className = `achievement-card ${isUnlocked ? 'unlocked' : ''}`;
+                card.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-info">
+                        <h3>${achievement.name}</h3>
+                        <p>${achievement.description}</p>
+                        <div class="achievement-reward">Reward: ${achievement.reward} coins</div>
+                    </div>
+                    <div style="margin-left: auto; font-size: 1.5em;">
+                        ${isUnlocked ? '✅' : '🔒'}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // ===== Render Shop =====
+        function renderShop() {
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = '';
+            
+            gameData.shopItems.forEach(item => {
+                const isOwned = gameState.inventory.includes(item.id);
+                const canAfford = gameState.coins >= item.cost;
+                
+                const card = document.createElement('div');
+                card.className = `shop-item ${isOwned ? 'owned' : ''}`;
+                card.innerHTML = `
+                    <div class="item-icon">${item.icon}</div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-cost">${item.cost} coins</div>
+                    <div style="color: #aaa; font-size: 0.9em; margin-bottom: 10px;">${item.type}</div>
+                    <button class="btn ${isOwned ? 'btn-hint' : canAfford ? 'btn-primary' : 'btn-skip'}" 
+                            onclick="buyItem('${item.id}')" ${isOwned || !canAfford ? 'disabled' : ''}>
+                        ${isOwned ? 'Owned' : canAfford ? 'Buy' : 'Too Expensive'}
+                    </button>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // ===== Buy Item =====
+        function buyItem(itemId) {
+            const item = gameData.shopItems.find(i => i.id === itemId);
+            
+            if (gameState.coins >= item.cost && !gameState.inventory.includes(itemId)) {
+                gameState.coins -= item.cost;
+                gameState.inventory.push(itemId);
+                updateCoinDisplay();
+                renderShop();
+                showToast(`🛒 Purchased: ${item.name}!`, '#4ecdc4');
+                saveProgress();
+            }
+        }
+
+        // ===== Update Stats =====
+        function updateStats() {
+            document.getElementById('statTotalQuestions').textContent = gameState.totalQuestions;
+            document.getElementById('statCorrect').textContent = gameState.correctAnswers;
+            document.getElementById('statAccuracy').textContent = gameState.totalQuestions > 0 
+                ? Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100) + '%' 
+                : '0%';
+            document.getElementById('statLevelsCompleted').textContent = gameState.levelsCompleted.length + '/8';
+            document.getElementById('statBestStreak').textContent = gameState.bestStreak;
+            document.getElementById('statTotalTime').textContent = Math.round(gameState.totalTime) + 's';
+        }
+
+        // ===== Update Coin Display =====
+        function updateCoinDisplay() {
+            document.getElementById('coinDisplay').textContent = gameState.coins;
+        }
+
+        // ===== Save / Load (don't persist transient state) =====
+        function saveProgress() {
+            const toSave = {
+                coins: gameState.coins,
+                bestStreak: gameState.bestStreak,
+                totalQuestions: gameState.totalQuestions,
+                correctAnswers: gameState.correctAnswers,
+                totalTime: gameState.totalTime,
+                levelsCompleted: gameState.levelsCompleted,
+                achievements: gameState.achievements,
+                inventory: gameState.inventory
+            };
+            try {
+                localStorage.setItem('mathQuestProgress', JSON.stringify(toSave));
+            } catch (e) {
+                // localStorage may fail in some contexts; ignore silently
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem('mathQuestProgress');
+                if (saved) {
+                    const loaded = JSON.parse(saved);
+                    // Only restore persistent fields
+                    if (typeof loaded.coins === 'number') gameState.coins = loaded.coins;
+                    if (typeof loaded.bestStreak === 'number') gameState.bestStreak = loaded.bestStreak;
+                    if (typeof loaded.totalQuestions === 'number') gameState.totalQuestions = loaded.totalQuestions;
+                    if (typeof loaded.correctAnswers === 'number') gameState.correctAnswers = loaded.correctAnswers;
+                    if (typeof loaded.totalTime === 'number') gameState.totalTime = loaded.totalTime;
+                    if (Array.isArray(loaded.levelsCompleted)) gameState.levelsCompleted = loaded.levelsCompleted;
+                    if (Array.isArray(loaded.achievements)) gameState.achievements = loaded.achievements;
+                    if (Array.isArray(loaded.inventory)) gameState.inventory = loaded.inventory;
+                }
+            } catch (e) {
+                // corrupted save; ignore
+            }
+            updateCoinDisplay();
+        }
+        
+        // ===== Reset Progress =====
+        function openResetModal() {
+            document.getElementById('resetModal').classList.add('show');
+        }
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.remove('show');
+        }
+        function confirmReset() {
+            try { localStorage.removeItem('mathQuestProgress'); } catch (e) {}
+            gameState = {
+                coins: 0, currentLevel: null, currentQuestion: 0, score: 0,
+                streak: 0, bestStreak: 0, totalQuestions: 0, correctAnswers: 0,
+                totalTime: 0, levelsCompleted: [], achievements: [], inventory: [],
+                usedHints: false, timerInterval: null, timeLeft: 0, startTime: null,
+                timerPaused: false, awaitingNext: false
+            };
+            closeResetModal();
+            updateCoinDisplay();
+            updateStreak();
+            showSection('levels');
+            showToast('Progress reset!', '#4ecdc4');
+        }
+
+        // ===== Confetti =====
+        function createConfetti() {
+            const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#9b59b6', '#e74c3c'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.width = (5 + Math.random() * 10) + 'px';
+                confetti.style.height = (5 + Math.random() * 10) + 'px';
+                confetti.style.animation = `confettiFall ${2 + Math.random() * 3}s linear forwards`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+
+        // ===== Keyboard handling: Enter submits OR advances depending on state =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                // Only act if we're in the game section
+                const gameActive = document.getElementById('gameSection').classList.contains('active');
+                if (!gameActive) return;
+                
+                if (gameState.awaitingNext) {
+                    e.preventDefault();
+                    nextQuestion();
+                } else if (document.activeElement === document.getElementById('answerInput')) {
+                    e.preventDefault();
+                    checkAnswer();
+                }
+            } else if (e.key === 'Escape') {
+                // Close any open modal
+                if (document.getElementById('resetModal').classList.contains('show')) {
+                    closeResetModal();
+                } else if (document.getElementById('quitModal').classList.contains('show')) {
+                    closeQuitModal();
+                }
+            }
+        });
+
+        // ===== Browser back-button support =====
+        // When entering a level, push a history state; when the user hits browser-back,
+        // intercept it and treat it the same as the Back to Menu button.
+        function pushGameHistoryState() {
+            try {
+                history.pushState({ mathQuestState: 'in-level' }, '', '');
+            } catch (e) { /* history API unavailable; silent fall back */ }
+        }
+        
+        window.addEventListener('popstate', () => {
+            const onGame = document.getElementById('gameSection').classList.contains('active');
+            const onResults = document.getElementById('resultsSection').classList.contains('active');
+            const quitModalOpen = document.getElementById('quitModal').classList.contains('show');
+            const resetModalOpen = document.getElementById('resetModal').classList.contains('show');
+            
+            // If a modal is open, just close it
+            if (quitModalOpen) { closeQuitModal(); return; }
+            if (resetModalOpen) { closeResetModal(); return; }
+            
+            // If mid-level, confirm before quitting
+            if (onGame) {
+                // Re-push so the next back press is intercepted again
+                pushGameHistoryState();
+                backToMenu();
+            } else if (onResults) {
+                showSection('levels');
+            }
+        });
+
+        // ===== Initialize =====
+        createParticles();
+    </script>
+</body>
+</html>
